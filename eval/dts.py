@@ -40,10 +40,8 @@ def compute_custom_pass(problem_scores):
     """
     Compute metrics according to user's custom definition:
     - Pass@1: for each problem, sum(score_i * 0.1) over 10 samples -> equivalent to mean(score)
-    - Pass@10: 1 if any score >= 0.99, else 0
     """
     pass1_total = 0.0
-    pass10_total = 0.0
     num_problems = len(problem_scores)
 
     for scores in problem_scores.values():
@@ -51,13 +49,9 @@ def compute_custom_pass(problem_scores):
         correct_count = sum(1.0 for s in scores if s >= 0.99)
         pass1_total += correct_count * 0.1
 
-        # Pass@10: 1 if at least one correct
-        pass10_total += 1.0 if correct_count >= 1 else 0.0
-
     pass1 = round(pass1_total / num_problems, 3)
-    pass10 = round(pass10_total / num_problems, 3)
 
-    return {"Pass@1": pass1, "Pass@10": pass10}
+    return {"Pass@1": pass1}
 
 def process_dataset(model_path, dataset_name):
     dataset_path = os.path.join(model_path, dataset_name)

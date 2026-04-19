@@ -4,7 +4,7 @@ from collections import defaultdict
 
 def compute_pass_at_k(temp_dir):
     """
-    Read csv from temp_dir and calculate Pass@1 and Pass@10.
+    Read csv from temp_dir and calculate Pass@1.
     """
     if not os.path.exists(temp_dir):
         return None
@@ -41,16 +41,8 @@ def compute_pass_at_k(temp_dir):
     all_scores = [s for scores in question_scores.values() for s in scores]
     pass_at_1 = sum(all_scores) / len(all_scores)
 
-    # Pass@10: A question counts as passed if at least one attempt is correct
-    pass_at_10_count = sum(
-        1 for scores in question_scores.values()
-        if any(s == 1.0 for s in scores)
-    )
-    pass_at_10 = pass_at_10_count / len(question_scores)
-
     return {
-        'Pass@1': round(pass_at_1, 3),
-        'Pass@10': round(pass_at_10, 3)
+        'Pass@1': round(pass_at_1, 3)
     }
 
 def main():
@@ -82,13 +74,13 @@ def main():
 
     # === Print results ===
     print("\n" + "=" * 70)
-    print("Pass@K Results (Temperature = 0.8, RS Sampling)")
+    print("Pass@1 Results (Temperature = 0.8, RS Sampling)")
     print("=" * 70)
     for model in sorted(results.keys()):
         print(f"\nModel: {model}")
         for dataset in sorted(results[model].keys()):
             m = results[model][dataset]
-            print(f"  - {dataset:<20} -> Pass@1 = {m['Pass@1']:<6} | Pass@10 = {m['Pass@10']}")
+            print(f"  - {dataset:<20} -> Pass@1 = {m['Pass@1']:<6}")
 
     # === Save to CSV ===
     rows = []
@@ -97,8 +89,7 @@ def main():
             rows.append({
                 "Model": model,
                 "Dataset": dataset,
-                "Pass@1": metrics['Pass@1'],
-                "Pass@10": metrics['Pass@10']
+                "Pass@1": metrics['Pass@1']
             })
 
     if rows:

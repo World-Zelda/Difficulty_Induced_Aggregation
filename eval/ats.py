@@ -15,20 +15,17 @@ def calculate_metrics_for_problem(scores):
     Calculate metrics for a single problem based on user-defined logic.
     scores: List of scores (0.0 or 1.0) for this problem across 10 temperatures.
     """
-    # Pass@10: If at least one of the 10 samples is correct, count as 1 point.
-    pass_at_10 = 1.0 if any(s == 1.0 for s in scores) else 0.0
-    
     # Pass@1: For every correct answer among the 10, add 0.1 points (equivalent to calculating the average).
     pass_at_1 = sum(scores) * 0.1
     
-    return pass_at_1, pass_at_10
+    return pass_at_1
 
 def process_math500(model_path):
     """
     Logic specifically for processing MATH-500.
     1. Iterate through all temperature directories.
     2. Aggregate scores for each global_index.
-    3. Calculate overall Pass@1 and Pass@10.
+    3. Calculate overall Pass@1.
     """
     dataset_path = os.path.join(model_path, DATASET_NAME)
     if not os.path.isdir(dataset_path):
@@ -66,7 +63,6 @@ def process_math500(model_path):
 
     # 2. Calculate metrics for each problem and accumulate
     total_pass1 = 0.0
-    total_pass10 = 0.0
     valid_question_count = 0
 
     for idx, scores in question_scores.items():
@@ -74,22 +70,19 @@ def process_math500(model_path):
         # If some temperatures are missing resulting in fewer than 10, we can choose to skip or calculate proportionally.
         # Based on your description "collected 10 in total", we assume 10 are required for valid statistics here.
         if len(scores) == 10:
-            p1, p10 = calculate_metrics_for_problem(scores)
+            p1 = calculate_metrics_for_problem(scores)
             total_pass1 += p1
-            total_pass10 += p10
             valid_question_count += 1
 
 
     if valid_question_count == 0:
         return None
 
-    # Calculate average Pass@1 and Pass@10
+    # Calculate average Pass@1
     avg_pass1 = total_pass1 / valid_question_count
-    avg_pass10 = total_pass10 / valid_question_count
 
     return {
         "Pass@1": round(avg_pass1, 3),
-        "Pass@10": round(avg_pass10, 3),
         "Valid_Questions": valid_question_count
     }
 
@@ -113,7 +106,7 @@ def main():
         
         if metrics:
             summary.append({"Model": model_name, **metrics})
-            print(f"  -> Pass@1: {metrics['Pass@1']}, Pass@10: {metrics['Pass@10']}")
+            print(f"  -> Pass@1: {metrics['Pass@1']}")
         else:
             print(f"  -> No valid data found.")
 
